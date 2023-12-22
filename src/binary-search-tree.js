@@ -8,6 +8,7 @@ const { Node } = require("../extensions/list-tree.js");
 class BinarySearchTree {
   constructor() {
     this.treeRoot = null;
+    this.parenthNode = null;
   }
 
   root() {
@@ -52,6 +53,13 @@ class BinarySearchTree {
   }
 
   _checkHasNode(node, data) {
+    if (!node) return false;
+    if (data === node.data) return true;
+
+    return data < node.data
+      ? this._checkHasNode(node.left, data)
+      : this._checkHasNode(node.right, data);
+
     let result = false;
 
     if (data === node.data) {
@@ -76,6 +84,14 @@ class BinarySearchTree {
   }
 
   _searchNode(node, data) {
+    if (!node) return null;
+    if (node.data === data) return node;
+
+    this.parenthNode = node
+    return data < node.data
+      ? this._searchNode(node.left, data)
+      : this._searchNode(node.right, data);
+
     let result = null;
 
     if (data === node.data) {
@@ -83,10 +99,12 @@ class BinarySearchTree {
     }
 
     if (data < node.data && node.left) {
+      this.parenthNode = node;
       result = this._searchNode(node.left, data);
     }
 
     if (data > node.data && node.right) {
+      this.parenthNode = node;
       result = this._searchNode(node.right, data);
     }
 
@@ -94,12 +112,67 @@ class BinarySearchTree {
   }
 
   remove(data) {
-    throw new NotImplementedError("Not implemented");
+    // throw new NotImplementedError("Not implemented");
     // remove line with error and write your code here
-    this._removeNode(this.treeRoot);
+    const removeNode = this.find(data);
+
+    if (!removeNode) {
+      console.log("--- no removeNode: ");
+      return;
+    }
+
+    if (!removeNode.left && !removeNode.right) {
+      if (this.parenthNode) {
+        removeNode.data < this.parenthNode.data
+          ? (this.parenthNode.left = null)
+          : (this.parenthNode.right = null);
+      } else {
+        this.treeRoot = null;
+      }
+      return;
+    }
+
+    if (removeNode.left && removeNode.right) {
+      const newNode = this._findMinNode(removeNode.right);
+      console.log("--- newNode: ", newNode);
+      console.log("--- parent: ", this.parenthNode);
+
+      if (this.parenthNode) {
+        // this.parenthNode.left.data === removeNode.data
+        //   ? (this.parenthNode.left = newNode)
+        //   : (this.parenthNode.right = newNode);
+      } else {
+        this.treeRoot = newNode;
+      }
+
+      if (removeNode.right.left) {
+        newNode.right = removeNode.right;
+      }
+      newNode.left = removeNode.left;
+
+      // console.log("--- removeNodeAA: ", removeNode.right);
+      // newNode.right = removeNode.right;
+      return;
+    }
+
+    if (removeNode.left || removeNode.right) {
+      removeNode.left
+        ? (this.parenthNode.left = removeNode.left)
+        : (this.parenthNode.right = removeNode.right);
+      return;
+    }
   }
 
-  _removeNode(node, data) {}
+  _findMinNode(node) {
+    let result = null;
+    if (node.left) {
+      result = this._findMinNode(node.left);
+    } else {
+      result = node;
+    }
+
+    return result;
+  }
 
   min() {
     // throw new NotImplementedError("Not implemented");
@@ -141,17 +214,22 @@ class BinarySearchTree {
 }
 
 const tree = new BinarySearchTree();
-tree.add(11);
+tree.add(15);
 tree.add(8);
 tree.add(3);
 tree.add(10);
+tree.add(11);
 tree.add(24);
 tree.add(2);
-console.log("--- 2: ", tree.show());
-console.log("--- search: ", tree.has(2));
-console.log("--- find: ", tree.find(2));
-console.log("--- min: ", tree.min());
-console.log("--- min: ", tree.max());
+
+// console.log("--- : ", tree.remove(15));
+// console.log("--- afteRemove: ", tree.show());
+// console.log("--- 2: ", tree.show());
+// console.log("--- search: ", tree.has(2));
+// console.log("--- 2: ", tree.show());
+// console.log("--- find: ", tree.find(2));
+// console.log("--- min: ", tree.min());
+// console.log("--- min: ", tree.max());
 
 module.exports = {
   BinarySearchTree,
